@@ -21,7 +21,7 @@ class User(AbstractBaseUser, PermissionsMixin):
          default=True,
          help_text='Designa si este usuario debe ser tratado como activo.'
      )
-     date_joined = models.DateTimeField('Fecha de registro', default=timezone.now)
+     date_joined = models.DateTimeField('Fecha de registro', auto_now_add=True)
      updated_at = models.DateTimeField('Última actualización', auto_now=True)
 
      objects = UserManager()
