@@ -1,0 +1,8 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# Exclude sensitive files from diff or export
+.env export-ignore
+*.key export-ignore
+*.pem export-ignore
+*.crt export-ignore
