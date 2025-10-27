@@ -1,0 +1,86 @@
+<div
+    id="task-{{ task.id }}"
+    class="group bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 animate-slide-in {% if task.completed %}bg-gray-50{% endif %}"
+    x-data="{ editing: false }"
+>
+    <div class="flex items-start space-x-4">
+        <!-- Checkbox para completar -->
+        <button
+            hx-post="{% url 'tasks:task_toggle' task.id %}"
+            hx-target="#task-{{ task.id }}"
+            hx-swap="outerHTML"
+            class="flex-shrink-0 mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
+                   {% if task.completed %}
+                       bg-green-500 border-green-500
+                   {% else %}
+                       border-gray-300 hover:border-green-500 hover:bg-green-50
+                   {% endif %}"
+        >
+            {% if task.completed %}
+                <i class="fas fa-check text-white text-xs"></i>
+            {% endif %}
+        </button>
+
+        <!-- Contenido de la tarea -->
+        <div class="flex-1 min-w-0" x-show="!editing">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <h3 class="text-base font-semibold {% if task.completed %}text-gray-400 line-through{% else %}text-gray-800{% endif %}">
+                        {{ task.title }}
+                    </h3>
+                    {% if task.description %}
+                    <p class="mt-1 text-sm {% if task.completed %}text-gray-400{% else %}text-gray-600{% endif %}">
+                        {{ task.description|truncatewords:20 }}
+                    </p>
+                    {% endif %}
+                    <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                        <span class="flex items-center">
+                            <i class="far fa-clock mr-1"></i>
+                            {{ task.created_at|date:"d/m/Y H:i" }}
+                        </span>
+                        {% if task.completed %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Completada
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-clock mr-1"></i>
+                            Pendiente
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                        @click="editing = true"
+                        hx-get="{% url 'tasks:task_detail' task.id %}"
+                        hx-target="#edit-form-{{ task.id }}"
+                        hx-swap="innerHTML"
+                        class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Editar"
+                    >
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                        hx-delete="{% url 'tasks:task_delete' task.id %}"
+                        hx-target="#task-{{ task.id }}"
+                        hx-swap="outerHTML swap:300ms"
+                        hx-confirm="¿Estás seguro de eliminar esta tarea?"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar"
+                    >
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de edición (oculto por defecto) -->
+    <div x-show="editing" x-cloak id="edit-form-{{ task.id }}" class="mt-4">
+        <!-- El formulario de edición se cargará aquí dinámicamente -->
+    </div>
+</div>

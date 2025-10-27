@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views
+from . import views, export_views
 from . import api_views
 
 app_name = 'tasks'
@@ -22,4 +22,9 @@ urlpatterns = [
     path('<int:pk>/toggle/', views.task_toggle, name='task_toggle'),
     path('<int:pk>/delete/', views.task_delete, name='task_delete'),
     path('form-empty/', views.task_form_empty, name='task_form_empty'),
+
+    # Export endpoints
+    path('export/csv/', export_views.export_tasks_csv, name='export_csv'),
+    path('export/excel/', export_views.export_tasks_excel, name='export_excel'),
+    path('export/pdf/', export_views.export_tasks_pdf, name='export_pdf'),
 ]

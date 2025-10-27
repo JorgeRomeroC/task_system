@@ -6,8 +6,15 @@ from .models import Task
 
 
 def task_list(request):
+    """Vista principal que renderiza la lista de tareas."""
     tasks = Task.objects.all()
 
+    # Calcular estadísticas ANTES de aplicar filtros
+    total_tasks = Task.objects.count()
+    completed_tasks = Task.objects.filter(completed=True).count()
+    pending_tasks = Task.objects.filter(completed=False).count()
+
+    # Aplicar filtros si existen
     search = request.GET.get('search', '')
     filter_status = request.GET.get('filter', 'all')
 
@@ -25,12 +32,16 @@ def task_list(request):
         'tasks': tasks,
         'search': search,
         'filter_status': filter_status,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
     }
 
     return render(request, 'tasks/task_list.html', context)
 
 
 def task_list_partial(request):
+    """Vista parcial para actualizar solo la lista de tareas (HTMX)."""
     tasks = Task.objects.all()
 
     # Aplicar filtros
@@ -56,6 +67,7 @@ def task_list_partial(request):
 
 @require_http_methods(["POST"])
 def task_create(request):
+    """Crea una nueva tarea (HTMX)."""
     title = request.POST.get('title', '').strip()
     description = request.POST.get('description', '').strip()
 
@@ -76,6 +88,7 @@ def task_create(request):
 
 @require_http_methods(["GET"])
 def task_detail(request, pk):
+    """Obtiene el detalle de una tarea para edición (HTMX)."""
     task = get_object_or_404(Task, pk=pk)
     context = {'task': task}
     return render(request, 'tasks/partials/task_edit_form.html', context)
@@ -83,6 +96,7 @@ def task_detail(request, pk):
 
 @require_http_methods(["POST"])
 def task_update(request, pk):
+    """Actualiza una tarea existente (HTMX)."""
     task = get_object_or_404(Task, pk=pk)
 
     title = request.POST.get('title', '').strip()
@@ -104,6 +118,7 @@ def task_update(request, pk):
 
 @require_http_methods(["POST"])
 def task_toggle(request, pk):
+    """Alterna el estado completado de una tarea (HTMX)."""
     task = get_object_or_404(Task, pk=pk)
     task.toggle_completed()
 
@@ -113,12 +128,14 @@ def task_toggle(request, pk):
 
 @require_http_methods(["DELETE"])
 def task_delete(request, pk):
+    """Elimina una tarea (HTMX)."""
     task = get_object_or_404(Task, pk=pk)
     task.delete()
 
+    # Retornar respuesta vacía para que HTMX elimine el elemento
     return HttpResponse('')
 
 
 def task_form_empty(request):
-
+    """Retorna el formulario vacío para cancelar edición (HTMX)."""
     return render(request, 'tasks/partials/task_form.html')

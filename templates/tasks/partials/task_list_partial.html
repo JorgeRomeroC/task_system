@@ -1,0 +1,8 @@
+{% for task in tasks %}
+    {% include 'tasks/partials/task_item.html' with task=task %}
+{% empty %}
+    <div class="text-center py-8">
+        <i class="fas fa-search text-gray-300 text-4xl mb-3"></i>
+        <p class="text-gray-500">No se encontraron tareas</p>
+    </div>
+{% endfor %}
