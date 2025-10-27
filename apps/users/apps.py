@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class TasksConfig(AppConfig):
+class UsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    verbose_name = 'Tareas'
-    name = 'apps.tasks'
+    verbose_name = 'Usuarios'
+    name = 'apps.users'
