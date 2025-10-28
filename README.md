@@ -97,8 +97,8 @@ npm install
 ```
 
 Las dependencias de Python incluyen:
-- Django 4.2.7
-- djangorestframework 3.14.0
+- Django 5.2.7
+- djangorestframework 3.16.1
 - django-cors-headers 4.3.1
 - openpyxl 3.1.2 (Excel)
 - reportlab 4.0.7 (PDF)
