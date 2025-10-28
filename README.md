@@ -42,8 +42,8 @@ Sistema completo de gestión de tareas desarrollado con Django, Django Rest Fram
 
 ## 🛠️ Stack Tecnológico
 
-- **Backend:** Django 4.2.7
-- **API:** Django Rest Framework 3.14.0
+- **Backend:** Django 5.2.7
+- **API:** Django Rest Framework 3.16.1
 - **Frontend:** HTMX 1.9.10 + Tailwind CSS (CDN)
 - **Interactividad:** Alpine.js 3.x
 - **Base de datos:** SQLite (desarrollo) / PostgreSQL (producción)
