@@ -696,7 +696,7 @@ Este proyecto es parte de un desafío técnico para Besimplit.
 ### Recursos y Aprendizajes
 
 Durante el desarrollo se consultaron:
-- Documentación oficial de Django 4.2
+- Documentación oficial de Django 5.2
 - Documentación de HTMX
 - Documentación de Django REST Framework
 - ReportLab para generación de PDFs
@@ -705,4 +705,4 @@ Durante el desarrollo se consultaron:
 
 ---
 
-**¡Gracias por revisar este proyecto!** 🚀
+**¡Gracias por revisar este proyecto!**
