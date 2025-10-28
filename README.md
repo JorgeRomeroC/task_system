@@ -14,6 +14,7 @@ Sistema completo de gestión de tareas desarrollado con Django, Django Rest Fram
 - ✅ **Validaciones** de datos
 
 ### 🎁 Bonus Implementados
+## Plantilla Admin: https://tailadmin.com/docs/installation
 
 #### Bonus A: UI/UX Mejorado ✨
 - Animaciones suaves en todas las interacciones
