@@ -1,10 +1,11 @@
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.db.models import Q
 from .models import Task
 
-
+@login_required
 def task_list(request):
     """Vista principal que renderiza la lista de tareas."""
     tasks = Task.objects.all()
