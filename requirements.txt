@@ -1,0 +1,22 @@
+asgiref==3.10.0
+Django==5.2.7
+djangorestframework==3.16.1
+python-decouple==3.8
+sqlparse==0.5.3
+
+
+django-cors-headers==4.3.1
+
+# Database
+#psycopg2-binary==2.9.9  # Para PostgreSQL (opcional)
+
+# Development
+django-extensions==3.2.3
+
+
+openpyxl==3.1.2  # Para exportar Excel
+reportlab==4.0.7  # Para exportar PDF
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
