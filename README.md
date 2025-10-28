@@ -66,7 +66,7 @@ Sistema completo de gestión de tareas desarrollado con Django, Django Rest Fram
 #### 1. Clonar el repositorio
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/JorgeRomeroC/task_system.git
 cd task_system
 ```
 
@@ -104,18 +104,6 @@ Las dependencias de Python incluyen:
 - reportlab 4.0.7 (PDF)
 - django-extensions 3.2.3
 
-#### 4. Configurar variables de entorno
-
-```bash
-cp .env.example .env
-```
-
-Edita el archivo `.env` con tus configuraciones:
-```env
-SECRET_KEY=tu-secret-key-aqui
-DEBUG=True
-DJANGO_SETTINGS_MODULE=config.settings.local
-```
 
 #### 5. Crear directorios necesarios
 
@@ -381,8 +369,7 @@ task_system/
 │   ├── js/
 │   └── partials/
 │
-├── .env                                     # Variables de entorno (ignorado en git)
-├── .env.example                             # Ejemplo de .env
+├── .env                                     # Variables de entorno (ignorado en git) ENVIADO POR CORREO
 ├── .gitignore                               # Archivos ignorados
 ├── .gitattributes
 ├── db.sqlite3                               # Base de datos (ignorado en git)
