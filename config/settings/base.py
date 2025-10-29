@@ -83,6 +83,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "users.User"
 
+# 3. Configurar LOGIN_URL y LOGIN_REDIRECT_URL:
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'tasks:task_list'
+LOGOUT_REDIRECT_URL = 'users:login'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
