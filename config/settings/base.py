@@ -89,6 +89,16 @@ LOGIN_REDIRECT_URL = 'tasks:task_list'
 LOGOUT_REDIRECT_URL = 'users:login'
 
 
+# Configuración de Email con MailTrap
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST', default='sandbox.smtp.mailtrap.io')
+EMAIL_PORT = config('EMAIL_PORT', default=2525, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@besimplit.com')
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 

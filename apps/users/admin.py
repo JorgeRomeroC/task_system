@@ -1,26 +1,30 @@
 from django.contrib import admin
-
-from apps.users.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import User
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ['id', 'email', 'get_groups']
-    filter_horizontal = ('groups',)
-    exclude = ('user_permissions',)
-    readonly_fields = ('date_joined', 'last_login')
-
-    # Campos al crear nuevo usuario
+class UserAdmin(BaseUserAdmin):
+    list_display = ('email', 'is_staff', 'is_active', 'date_joined', 'get_groups')
+    list_filter = ('is_staff', 'is_active', 'groups')
+    search_fields = ('email',)
+    ordering = ('-date_joined',)
+    
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Fechas', {'fields': ('date_joined', 'updated_at')}),
+    )
+    
+    readonly_fields = ('date_joined', 'updated_at')
+    
     add_fieldsets = (
-        ('Permisos y Acceso', {
+        (None, {
             'classes': ('wide',),
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups'),
-            'description': 'Selecciona el grupo apropiado según el rol del usuario.'
+            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active', 'groups'),
         }),
     )
-
+    
     def get_groups(self, obj):
-        """Muestra los grupos del usuario en la lista"""
-        return ", ".join([group.name for group in obj.groups.all()]) or "Sin grupo"
-
+        return ", ".join([g.name for g in obj.groups.all()])
     get_groups.short_description = 'Grupos'
