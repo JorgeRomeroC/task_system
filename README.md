@@ -128,7 +128,15 @@ Esto creará:
 #### 7. Crear datos de demostración (Recomendado)
 
 ```bash
+# Crear tareas de prueba
 python manage.py create_demo_tasks
+
+#Crear usuarios de prueba
+python manage.py create_test_users
+
+# Este comando genera:
+- **Superusuario**: admin@test.com / admin123
+- **Usuario regular**: user@test.com / user123
 ```
 
 **Opciones del comando:**
@@ -618,6 +626,7 @@ python manage.py createsuperuser
 
 # Generar datos demo
 python manage.py create_demo_tasks --clear --count=20
+python manage.py create_test_users
 
 # Shell interactivo mejorado
 python manage.py shell_plus  # Requiere django-extensions
