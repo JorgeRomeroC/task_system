@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 
 
 class LoginView(View):
+    """Vista de login - REQUIERE CSRF token para seguridad."""
     template_name = 'users/login.html'
     
     def get(self, request):
@@ -44,7 +45,7 @@ class LoginView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(View):
-    """Vista de logout que acepta GET y POST sin requerir CSRF token."""
+    """Vista de logout - Sin CSRF token para evitar errores."""
     
     def post(self, request):
         try:

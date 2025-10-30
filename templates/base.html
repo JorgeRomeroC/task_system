@@ -15,6 +15,8 @@
     <!-- Alpine.js (opcional, para interacciones adicionales) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -123,7 +125,7 @@
             }
         });
 
-        // Manejo de mensajes de éxito/error
+        // Manejo de mensajes de éxito/error 
         document.body.addEventListener('htmx:afterRequest', function(event) {
             if (event.detail.successful) {
                 console.log('Request successful');

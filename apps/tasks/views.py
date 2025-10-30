@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db.models import Q
 from django.contrib import messages
@@ -132,7 +132,10 @@ def task_create(request):
             'task': task,
             'is_admin': True,
         }
-        return render(request, 'tasks/partials/task_item.html', context)
+        
+        response = render(request, 'tasks/partials/task_item.html', context)
+        response['HX-Trigger'] = 'taskCreated'
+        return response
     
     except Exception:
         return HttpResponse(
@@ -205,7 +208,10 @@ def task_update(request, pk):
             'task': task,
             'is_admin': True,
         }
-        return render(request, 'tasks/partials/task_item.html', context)
+        
+        response = render(request, 'tasks/partials/task_item.html', context)
+        response['HX-Trigger'] = 'taskUpdated'
+        return response
     
     except Exception:
         return HttpResponse(
@@ -233,7 +239,10 @@ def task_toggle(request, pk):
             'task': task,
             'is_admin': is_user_admin,
         }
-        return render(request, 'tasks/partials/task_item.html', context)
+        
+        response = render(request, 'tasks/partials/task_item.html', context)
+        response['HX-Trigger'] = f'taskToggled:{{"completed": {str(task.completed).lower()}}}'
+        return response
     
     except Exception:
         return HttpResponse(status=500)
@@ -247,7 +256,10 @@ def task_delete(request, pk):
     try:
         task = get_object_or_404(Task, pk=pk)
         task.delete()
-        return HttpResponse('')
+        
+        response = HttpResponse('')
+        response['HX-Trigger'] = 'taskDeleted'
+        return response
     except Exception:
         return HttpResponse(status=500)
 
