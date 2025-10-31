@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from . import views, dashboard_views
 from . import views, export_views
 from . import api_views
 
@@ -27,4 +28,13 @@ urlpatterns = [
     path('export/csv/', export_views.export_tasks_csv, name='export_csv'),
     path('export/excel/', export_views.export_tasks_excel, name='export_excel'),
     path('export/pdf/', export_views.export_tasks_pdf, name='export_pdf'),
+    
+    
+    # Nuevas rutas del Dashboard
+    path('dashboard/', dashboard_views.dashboard, name='dashboard'),
+    path('dashboard/task/create/', dashboard_views.dashboard_task_create, name='dashboard_task_create'),
+    path('dashboard/task/<int:pk>/detail/', dashboard_views.dashboard_task_detail, name='dashboard_task_detail'),
+    path('dashboard/task/<int:pk>/update/', dashboard_views.dashboard_task_update, name='dashboard_task_update'),
+    path('dashboard/task/<int:pk>/toggle/', dashboard_views.dashboard_task_toggle, name='dashboard_task_toggle'),
+    path('dashboard/task/<int:pk>/delete/', dashboard_views.dashboard_task_delete, name='dashboard_task_delete'),
 ]
