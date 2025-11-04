@@ -191,10 +191,10 @@ __pycache__/
 local_settings.py
 
 # Django static and media folders
-/static/
-/staticfiles/
-/media/
-/collected_static/
+#/static/
+#/staticfiles/
+#/media/
+#/collected_static/
 
 # Migrations (optional: comentar si deseas versionarlas)
 # **/migrations/*.py
