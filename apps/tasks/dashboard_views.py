@@ -2,104 +2,84 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.contrib import messages
 from .models import Task
 from apps.users.models import User
 
 
-def is_admin(user):
-    """Verifica si el usuario pertenece al grupo Administrador."""
-    return user.groups.filter(name='Administrador').exists()
+def is_admin_or_superuser(user):
+    """Verifica si el usuario es administrador o superusuario."""
+    return user.is_superuser or user.groups.filter(name='Administrador').exists()
 
 
 @login_required
-def task_list(request):
-    """Vista principal que renderiza la lista de tareas."""
-    user = request.user
-    is_user_admin = is_admin(user)
+@user_passes_test(is_admin_or_superuser, login_url='tasks:task_list')
+def dashboard(request):
+    """Dashboard con gestión completa de tareas. Solo admin/superuser."""
     
-    # Usuarios limitados solo ven sus tareas asignadas
-    if is_user_admin:
-        tasks = Task.objects.all()
-        total_tasks = Task.objects.count()
-        completed_tasks = Task.objects.filter(completed=True).count()
-        pending_tasks = Task.objects.filter(completed=False).count()
-    else:
-        tasks = Task.objects.filter(assigned_to=user)
-        total_tasks = tasks.count()
-        completed_tasks = tasks.filter(completed=True).count()
-        pending_tasks = tasks.filter(completed=False).count()
-
-    # Aplicar filtros si existen
+    # Obtener todas las tareas
+    tasks = Task.objects.select_related('assigned_to', 'created_by').all()
+    
+    # Aplicar filtros
     search = request.GET.get('search', '')
     filter_status = request.GET.get('filter', 'all')
-
+    filter_user = request.GET.get('user', '')
+    
     if search:
         tasks = tasks.filter(
-            Q(title__icontains=search) | Q(description__icontains=search)
+            Q(title__icontains=search) | 
+            Q(description__icontains=search) |
+            Q(assigned_to__email__icontains=search)
         )
-
+    
     if filter_status == 'completed':
         tasks = tasks.filter(completed=True)
     elif filter_status == 'pending':
         tasks = tasks.filter(completed=False)
-
-    # Solo administradores pueden ver la lista de usuarios para asignar
-    users_list = User.objects.filter(groups__name='Usuario Limitado') if is_user_admin else []
-
+    
+    if filter_user:
+        tasks = tasks.filter(assigned_to_id=filter_user)
+    
+    # Estadísticas generales
+    total_tasks = Task.objects.count()
+    completed_tasks = Task.objects.filter(completed=True).count()
+    pending_tasks = Task.objects.filter(completed=False).count()
+    completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+    
+    # Estadísticas por usuario
+    user_stats = User.objects.filter(
+        groups__name='Usuario Limitado'
+    ).annotate(
+        total=Count('assigned_tasks'),
+        completed=Count('assigned_tasks', filter=Q(assigned_tasks__completed=True))
+    ).order_by('-total')
+    
+    # Lista de usuarios para asignar
+    users_list = User.objects.filter(groups__name='Usuario Limitado')
+    
     context = {
         'tasks': tasks,
         'search': search,
         'filter_status': filter_status,
+        'filter_user': filter_user,
         'total_tasks': total_tasks,
         'completed_tasks': completed_tasks,
         'pending_tasks': pending_tasks,
-        'is_admin': is_user_admin,
+        'completion_rate': completion_rate,
+        'user_stats': user_stats,
         'users_list': users_list,
+        'is_dashboard': True,
     }
-
-    return render(request, 'tasks/task_list.html', context)
-
-
-@login_required
-def task_list_partial(request):
-    """Vista parcial para actualizar solo la lista de tareas (HTMX)."""
-    user = request.user
-    is_user_admin = is_admin(user)
     
-    if is_user_admin:
-        tasks = Task.objects.all()
-    else:
-        tasks = Task.objects.filter(assigned_to=user)
-
-    # Aplicar filtros
-    search = request.GET.get('search', '')
-    filter_status = request.GET.get('filter', 'all')
-
-    if search:
-        tasks = tasks.filter(
-            Q(title__icontains=search) | Q(description__icontains=search)
-        )
-
-    if filter_status == 'completed':
-        tasks = tasks.filter(completed=True)
-    elif filter_status == 'pending':
-        tasks = tasks.filter(completed=False)
-
-    context = {
-        'tasks': tasks,
-        'is_admin': is_user_admin,
-    }
-
-    return render(request, 'tasks/partials/task_list_partial.html', context)
+    return render(request, 'tasks/dashboard.html', context)
 
 
 @login_required
-@user_passes_test(is_admin, login_url='tasks:task_list')
+@user_passes_test(is_admin_or_superuser, login_url='tasks:task_list')
 @require_http_methods(["POST"])
-def task_create(request):
-    """Crea una nueva tarea (HTMX). Solo administradores."""
+def dashboard_task_create(request):
+    """Crea una nueva tarea desde el dashboard (HTMX)."""
     try:
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
@@ -130,10 +110,10 @@ def task_create(request):
 
         context = {
             'task': task,
-            'is_admin': True,
+            'is_dashboard': True,
         }
         
-        response = render(request, 'tasks/partials/task_item.html', context)
+        response = render(request, 'tasks/partials/dashboard_task_item.html', context)
         response['HX-Trigger'] = 'taskCreated'
         return response
     
@@ -145,26 +125,20 @@ def task_create(request):
 
 
 @login_required
+@user_passes_test(is_admin_or_superuser, login_url='tasks:task_list')
 @require_http_methods(["GET"])
-def task_detail(request, pk):
-    """Obtiene el detalle de una tarea para edición (HTMX)."""
+def dashboard_task_detail(request, pk):
+    """Obtiene el detalle de una tarea para edición desde dashboard (HTMX)."""
     try:
-        user = request.user
-        is_user_admin = is_admin(user)
-        
-        if is_user_admin:
-            task = get_object_or_404(Task, pk=pk)
-        else:
-            task = get_object_or_404(Task, pk=pk, assigned_to=user)
-        
-        users_list = User.objects.filter(groups__name='Usuario Limitado') if is_user_admin else []
+        task = get_object_or_404(Task, pk=pk)
+        users_list = User.objects.filter(groups__name='Usuario Limitado')
         
         context = {
             'task': task,
-            'is_admin': is_user_admin,
             'users_list': users_list,
+            'is_dashboard': True,
         }
-        return render(request, 'tasks/partials/task_edit_form.html', context)
+        return render(request, 'tasks/partials/dashboard_task_edit_form.html', context)
     
     except Exception:
         return HttpResponse(
@@ -174,10 +148,10 @@ def task_detail(request, pk):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='tasks:task_list')
+@user_passes_test(is_admin_or_superuser, login_url='tasks:task_list')
 @require_http_methods(["POST"])
-def task_update(request, pk):
-    """Actualiza una tarea existente (HTMX). Solo administradores."""
+def dashboard_task_update(request, pk):
+    """Actualiza una tarea desde el dashboard (HTMX)."""
     try:
         task = get_object_or_404(Task, pk=pk)
 
@@ -206,10 +180,10 @@ def task_update(request, pk):
 
         context = {
             'task': task,
-            'is_admin': True,
+            'is_dashboard': True,
         }
         
-        response = render(request, 'tasks/partials/task_item.html', context)
+        response = render(request, 'tasks/partials/dashboard_task_item.html', context)
         response['HX-Trigger'] = 'taskUpdated'
         return response
     
@@ -221,26 +195,20 @@ def task_update(request, pk):
 
 
 @login_required
+@user_passes_test(is_admin_or_superuser, login_url='tasks:task_list')
 @require_http_methods(["POST"])
-def task_toggle(request, pk):
-    """Alterna el estado completado de una tarea (HTMX)."""
+def dashboard_task_toggle(request, pk):
+    """Alterna el estado completado de una tarea desde dashboard (HTMX)."""
     try:
-        user = request.user
-        is_user_admin = is_admin(user)
-        
-        if is_user_admin:
-            task = get_object_or_404(Task, pk=pk)
-        else:
-            task = get_object_or_404(Task, pk=pk, assigned_to=user)
-        
+        task = get_object_or_404(Task, pk=pk)
         task.toggle_completed()
 
         context = {
             'task': task,
-            'is_admin': is_user_admin,
+            'is_dashboard': True,
         }
         
-        response = render(request, 'tasks/partials/task_item.html', context)
+        response = render(request, 'tasks/partials/dashboard_task_item.html', context)
         response['HX-Trigger'] = f'taskToggled:{{"completed": {str(task.completed).lower()}}}'
         return response
     
@@ -249,10 +217,10 @@ def task_toggle(request, pk):
 
 
 @login_required
-@user_passes_test(is_admin, login_url='tasks:task_list')
+@user_passes_test(is_admin_or_superuser, login_url='tasks:task_list')
 @require_http_methods(["DELETE"])
-def task_delete(request, pk):
-    """Elimina una tarea (HTMX). Solo administradores."""
+def dashboard_task_delete(request, pk):
+    """Elimina una tarea desde el dashboard (HTMX)."""
     try:
         task = get_object_or_404(Task, pk=pk)
         task.delete()
@@ -262,9 +230,3 @@ def task_delete(request, pk):
         return response
     except Exception:
         return HttpResponse(status=500)
-
-
-@login_required
-def task_form_empty(request):
-    """Retorna el formulario vacío para cancelar edición (HTMX)."""
-    return render(request, 'tasks/partials/task_form.html')

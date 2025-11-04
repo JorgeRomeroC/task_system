@@ -15,6 +15,8 @@
     <!-- Alpine.js (opcional, para interacciones adicionales) -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -89,13 +91,19 @@
                     <a href="{% url 'tasks:task_list' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-list mr-2"></i>Tareas
                     </a>
+                        <!-- AGREGAR ESTO -->
+                    {% if request.user.is_superuser or request.user.groups.filter.name__in|add:'Administrador' %}
+                    <a href="{% url 'tasks:dashboard' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </a>
+                    {% endif %}
                     <a href="/admin/" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-chart-line mr-2"></i>Admin
                     </a>
                     <form method="post" action="{% url 'users:logout' %}" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                            <i class="fas fa-cog mr-2"></i>Salir
+                        <button onclick="confirmLogout(event)" type="submit" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                            <i class="fas text-red-700 fa-sign-out mr-2"></i>Salir
                         </button>
                     </form>
                 </div>
@@ -123,7 +131,7 @@
             }
         });
 
-        // Manejo de mensajes de éxito/error
+        // Manejo de mensajes de éxito/error 
         document.body.addEventListener('htmx:afterRequest', function(event) {
             if (event.detail.successful) {
                 console.log('Request successful');

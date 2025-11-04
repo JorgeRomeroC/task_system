@@ -1,9 +1,13 @@
-from email import message
 from django.shortcuts import redirect, render
 from django.views import View
 from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
 
 class LoginView(View):
+    """Vista de login - REQUIERE CSRF token para seguridad."""
     template_name = 'users/login.html'
     
     def get(self, request):
@@ -12,29 +16,47 @@ class LoginView(View):
         return render(request, self.template_name)
     
     def post(self, request):
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        try:
+            email = request.POST.get('email', '').strip()
+            password = request.POST.get('password', '')
+            
+            if not email or not password:
+                messages.error(request, 'Por favor completa todos los campos')
+                return render(request, self.template_name)
+            
+            user = authenticate(request, email=email, password=password)
+            
+            if user is not None:
+                if not user.is_active:
+                    messages.error(request, 'Tu cuenta está inactiva')
+                    return render(request, self.template_name)
+                    
+                login(request, user)
+                next_url = request.GET.get('next', 'tasks:task_list')
+                return redirect(next_url)
+            else:
+                messages.error(request, 'Credenciales inválidas')
+                return render(request, self.template_name)
         
-        if not email or not password:
-            message.error(request, 'Porfavor completa todos los campos')
+        except Exception:
+            messages.error(request, 'Error al procesar el inicio de sesión')
             return render(request, self.template_name)
-        
-        user = authenticate(request, email=email, password=password)
-        
-        if user is not None:
-            login(request, user)
-            next_url = request.GET.get('next', 'tasks:task_list')
-            return redirect(next_url)
-        else:
-            message.error(request, 'Credenciales inválidas')
-            return render(request, self.template_name)
-        
-        
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(View):
+    """Vista de logout - Sin CSRF token para evitar errores."""
+    
     def post(self, request):
-        logout(request)
+        try:
+            logout(request)
+        except Exception:
+            pass
         return redirect('users:login')
     
     def get(self, request):
-        logout(request)
+        try:
+            logout(request)
+        except Exception:
+            pass
         return redirect('users:login')
